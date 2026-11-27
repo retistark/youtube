@@ -193,13 +193,16 @@ if (store.get('mv_autostart_once') === '1'){
 }
 
 // 마우스를 움직일 때만 3초 동안 버튼 표시, 가만히 있으면 버튼·커서 숨김
-let hideTimer = null;
+// 단, 커서가 버튼 위에 올라가 있는 동안은 계속 보이게 (누르려는데 사라지지 않게)
+let hideTimer = null, overBar = false;
 function showControls(){
   document.body.classList.add('active');
   clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => document.body.classList.remove('active'), 3000);
+  hideTimer = setTimeout(() => { if (!overBar) document.body.classList.remove('active'); }, 3000);
 }
 ['mousemove','mousedown','touchstart','keydown'].forEach(ev => document.addEventListener(ev, showControls, {passive:true}));
+$('bar').addEventListener('mouseenter', () => { overBar = true; showControls(); });
+$('bar').addEventListener('mouseleave', () => { overBar = false; showControls(); });
 
 $('start').addEventListener('click', start);
 $('url').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
