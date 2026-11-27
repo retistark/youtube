@@ -60,6 +60,7 @@ body.active #status{opacity:1}
 <script>
 {
 const $ = id => document.getElementById(id);
+const VER = '2'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
 const store = {
   get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
   set(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
@@ -208,6 +209,21 @@ function showControls(){
 ['mousemove','mousedown','touchstart','keydown'].forEach(ev => document.addEventListener(ev, showControls, {passive:true}));
 $('bar').addEventListener('mouseenter', () => { overBar = true; showControls(); });
 $('bar').addEventListener('mouseleave', () => { overBar = false; showControls(); });
+
+// 새 버전이 올라오면 새로고침 없이 알아서 새 화면으로 (5분마다 확인, 캐시 무시)
+async function checkUpdate(){
+  try{
+    const r = await fetch(location.pathname + '?t=' + Date.now(), { cache: 'no-store' });
+    const m = (await r.text()).match(/const VER = '(\d+)'/);
+    if (m && m[1] !== VER){
+      if (started) store.set('mv_autostart_once', '1');
+      const q = new URLSearchParams(location.search); q.set('v', m[1]);
+      location.replace(location.pathname + '?' + q);
+    }
+  }catch(e){}
+}
+checkUpdate();
+setInterval(checkUpdate, 5 * 60 * 1000);
 
 $('start').addEventListener('click', start);
 $('url').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
