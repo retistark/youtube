@@ -26,8 +26,10 @@ body.playing #cover{display:block;cursor:none}
 body.playing.active #cover{cursor:default}
 #bar button{font-size:15px;padding:10px 14px;background:rgba(0,0,0,.7)}
 /* 설정 버튼은 숨기지 않고 오른쪽 위에 항상 흐리게 (어떤 기기에서도 바로 누를 수 있게) */
-#btnSetup{position:fixed;top:12px;right:12px;z-index:20;font-size:18px;padding:12px 18px;background:rgba(0,0,0,.55);opacity:.6;cursor:pointer}
-#btnSetup:hover,#btnSetup:active{opacity:1}
+#btnSetup{position:fixed;top:14px;right:14px;z-index:30;font-size:24px;padding:18px 28px;min-width:150px;min-height:64px;background:rgba(0,0,0,.7);border:2px solid rgba(255,255,255,.5);opacity:.85;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+/* 눈에 보이는 버튼보다 손가락 닿는 범위를 더 넓게 */
+#btnSetup::before{content:"";position:absolute;inset:-20px}
+#btnSetup:hover,#btnSetup:active{opacity:1;background:#e53935}
 body:not(.playing) #btnSetup{display:none}
 #status{position:fixed;left:16px;bottom:16px;z-index:5;font-size:14px;color:#ccc;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .3s}
 body.active #status{opacity:1}
@@ -60,7 +62,7 @@ body.active #status{opacity:1}
 <script>
 {
 const $ = id => document.getElementById(id);
-const VER = '2'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
+const VER = '3'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
 const store = {
   get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
   set(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
@@ -228,7 +230,20 @@ setInterval(checkUpdate, 5 * 60 * 1000);
 $('start').addEventListener('click', start);
 $('url').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
 $('btnNext').addEventListener('click', next);
-$('btnSetup').addEventListener('click', () => { $('setup').style.display = 'flex'; document.body.classList.remove('playing'); });
+// 설정 열기: 손가락/마우스가 닿는 순간 바로 열리게 (click 기다리지 않음)
+function openSetup(e){
+  if (e) e.preventDefault();
+  if (!document.body.classList.contains('playing')) return;
+  $('setup').style.display = 'flex';
+  document.body.classList.remove('playing');
+  setTimeout(() => $('url').focus(), 50);
+}
+$('btnSetup').addEventListener('pointerdown', openSetup);
+$('btnSetup').addEventListener('click', openSetup); // 리모컨·키보드 엔터용
+// 키보드/리모컨: S 또는 ESC 키로도 설정 열기
+document.addEventListener('keydown', e => {
+  if (e.key === 's' || e.key === 'S' || e.key === 'ㄴ' || e.key === 'Escape') openSetup();
+});
 $('btnFull').addEventListener('click', () => {
   const el = document.documentElement;
   (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
