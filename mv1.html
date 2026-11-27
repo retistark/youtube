@@ -25,6 +25,10 @@ body.playing:not(.active) #bar button{cursor:none}
 body.playing #cover{display:block;cursor:none}
 body.playing.active #cover{cursor:default}
 #bar button{font-size:15px;padding:10px 14px;background:rgba(0,0,0,.7)}
+/* 설정 버튼은 숨기지 않고 오른쪽 위에 항상 흐리게 (어떤 기기에서도 바로 누를 수 있게) */
+#btnSetup{position:fixed;top:12px;right:12px;z-index:20;font-size:18px;padding:12px 18px;background:rgba(0,0,0,.55);opacity:.6;cursor:pointer}
+#btnSetup:hover,#btnSetup:active{opacity:1}
+body:not(.playing) #btnSetup{display:none}
 #status{position:fixed;left:16px;bottom:16px;z-index:5;font-size:14px;color:#ccc;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .3s}
 body.active #status{opacity:1}
 </style>
@@ -50,8 +54,8 @@ body.active #status{opacity:1}
 <div id="bar">
   <button id="btnNext">다음 곡</button>
   <button id="btnFull">전체화면</button>
-  <button id="btnSetup">설정</button>
 </div>
+<button id="btnSetup">⚙ 설정</button>
 
 <script>
 {
