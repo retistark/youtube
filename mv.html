@@ -18,13 +18,14 @@ label input{width:26px;height:26px}
 button{font-size:22px;padding:16px;border:0;border-radius:12px;background:#e53935;color:#fff;font-weight:700;cursor:pointer}
 .hint{color:#aaa;font-size:15px;margin:0}
 #err{color:#ff8a80;min-height:1.5em;margin:0}
-#bar{position:fixed;right:16px;bottom:16px;z-index:5;display:flex;gap:8px;opacity:0;transition:opacity .3s}
-body:hover #bar{opacity:1}
+#bar{position:fixed;right:16px;bottom:16px;z-index:5;display:flex;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s}
+body.active #bar{opacity:1;pointer-events:auto}
+#cover{position:fixed;inset:0;z-index:2;display:none}
+body.playing #cover{display:block;cursor:none}
+body.playing.active #cover{cursor:default}
 #bar button{font-size:15px;padding:10px 14px;background:rgba(0,0,0,.7)}
 #status{position:fixed;left:16px;bottom:16px;z-index:5;font-size:14px;color:#ccc;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .3s}
-body:hover #status{opacity:1}
-body.playing{cursor:none}
-body.playing:hover{cursor:default}
+body.active #status{opacity:1}
 </style>
 </head>
 <body>
@@ -43,6 +44,7 @@ body.playing:hover{cursor:default}
   </div>
 </div>
 
+<div id="cover"></div>
 <div id="status"></div>
 <div id="bar">
   <button id="btnNext">다음 곡</button>
@@ -189,6 +191,15 @@ if (store.get('mv_autostart_once') === '1'){
   store.set('mv_autostart_once', '0');
   window.onYouTubeIframeAPIReady = () => { apiReady = true; if (listId) start(); };
 }
+
+// 마우스를 움직일 때만 3초 동안 버튼 표시, 가만히 있으면 버튼·커서 숨김
+let hideTimer = null;
+function showControls(){
+  document.body.classList.add('active');
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => document.body.classList.remove('active'), 3000);
+}
+['mousemove','mousedown','touchstart','keydown'].forEach(ev => document.addEventListener(ev, showControls, {passive:true}));
 
 $('start').addEventListener('click', start);
 $('url').addEventListener('keydown', e => { if (e.key === 'Enter') start(); });
