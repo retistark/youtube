@@ -57,7 +57,7 @@ body.active #status{opacity:1}
 <script>
 {
 const $ = id => document.getElementById(id);
-const VER = '8'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
+const VER = '9'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
 const store = {
   get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
   set(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
@@ -276,10 +276,21 @@ $('btnSetup').addEventListener('click', openSetup); // 리모컨·키보드 엔�
 document.addEventListener('keydown', e => {
   if (e.key === 's' || e.key === 'S' || e.key === 'ㄴ' || e.key === 'Escape') openSetup();
 });
-$('btnFull').addEventListener('click', () => {
+// 우리 방식 전체화면 (페이지 통째로 → 우리 버튼도 그대로 보임)
+// 브라우저 규칙상 사람이 뭔가 누를 때만 켜질 수 있어서, 누르는 순간에 같이 켬
+function goFull(){
+  if (document.fullscreenElement || document.webkitFullscreenElement) return;
   const el = document.documentElement;
-  (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
-});
+  try{
+    const r = (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+    if (r && r.catch) r.catch(() => {});
+  }catch(e){}
+}
+$('btnFull').addEventListener('click', goFull);
+$('start').addEventListener('click', goFull);
+$('btnSound').addEventListener('click', goFull);
+// 재생 중에 우리 버튼(다음 곡 등)을 누를 때도 전체화면 아니면 같이 켜기
+$('btnNext').addEventListener('click', goFull);
 }
 </script>
 </body>
