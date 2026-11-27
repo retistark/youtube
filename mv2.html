@@ -27,6 +27,9 @@ body.playing.active #bar{opacity:1;pointer-events:auto}
 #bar button:hover,#bar button:active{opacity:1;background:#e53935}
 #status{position:fixed;left:14px;top:calc(66vh + 70px);z-index:5;font-size:14px;color:#ccc;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none}
 body.active #status{opacity:1}
+/* 가만히 있으면 투명 막을 깔아서 커서(마우스 점) 숨김. 마우스를 움직이면 바로 걷혀서 유튜브 조작은 그대로 됨 */
+#cover{position:fixed;inset:0;z-index:25;display:none;cursor:none;background:transparent}
+body.playing.idle #cover{display:block}
 #btnSound{display:none;position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:40;font-size:34px;padding:24px 40px;box-shadow:0 0 0 6px rgba(255,255,255,.3)}
 </style>
 </head>
@@ -46,18 +49,18 @@ body.active #status{opacity:1}
   </div>
 </div>
 
+<div id="cover"></div>
 <div id="status"></div>
 <button id="btnSound">🔊 소리 켜기</button>
 <div id="bar">
   <button id="btnSetup">재생목록 바꾸기</button>
   <button id="btnNext">다음 곡</button>
-  <button id="btnFull">전체화면</button>
 </div>
 
 <script>
 {
 const $ = id => document.getElementById(id);
-const VER = '9'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
+const VER = '10'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
 const store = {
   get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
   set(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
@@ -130,7 +133,7 @@ function start(){
   store.set('mv_shuffle', $('shuffle').checked ? '1' : '0');
   store.set('mv_autostart', $('autostart').checked ? '1' : '0');
   $('setup').style.display = 'none';
-  document.body.classList.add('playing');
+  document.body.classList.add('playing', 'idle');
   lastGood = Date.now();
 
   if (player){ loadList(); return; }
@@ -232,9 +235,11 @@ if (store.get('mv_autostart_once') === '1'){
 let hideTimer = null;
 function showControls(){
   document.body.classList.add('active');
+  document.body.classList.remove('idle');
   clearTimeout(hideTimer);
   hideTimer = setTimeout(() => {
     document.body.classList.remove('active');
+    document.body.classList.add('idle');
     // 영상 쪽으로 넘어간 포커스를 되찾아 둬야, 다음에 영상을 만질 때도 버튼이 다시 나타남
     try{ if (document.activeElement && document.activeElement.tagName === 'IFRAME') document.activeElement.blur(); window.focus(); }catch(e){}
   }, 5000);
@@ -276,21 +281,7 @@ $('btnSetup').addEventListener('click', openSetup); // 리모컨·키보드 엔�
 document.addEventListener('keydown', e => {
   if (e.key === 's' || e.key === 'S' || e.key === 'ㄴ' || e.key === 'Escape') openSetup();
 });
-// 우리 방식 전체화면 (페이지 통째로 → 우리 버튼도 그대로 보임)
-// 브라우저 규칙상 사람이 뭔가 누를 때만 켜질 수 있어서, 누르는 순간에 같이 켬
-function goFull(){
-  if (document.fullscreenElement || document.webkitFullscreenElement) return;
-  const el = document.documentElement;
-  try{
-    const r = (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
-    if (r && r.catch) r.catch(() => {});
-  }catch(e){}
-}
-$('btnFull').addEventListener('click', goFull);
-$('start').addEventListener('click', goFull);
-$('btnSound').addEventListener('click', goFull);
-// 재생 중에 우리 버튼(다음 곡 등)을 누를 때도 전체화면 아니면 같이 켜기
-$('btnNext').addEventListener('click', goFull);
+
 }
 </script>
 </body>
