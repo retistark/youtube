@@ -18,8 +18,9 @@ label input{width:26px;height:26px}
 button{font-size:22px;padding:16px;border:0;border-radius:12px;background:#e53935;color:#fff;font-weight:700;cursor:pointer}
 .hint{color:#aaa;font-size:15px;margin:0}
 #err{color:#ff8a80;min-height:1.5em;margin:0}
-#bar{position:fixed;right:16px;bottom:16px;z-index:5;display:flex;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s}
-body.active #bar{opacity:1;pointer-events:auto}
+#bar{position:fixed;right:16px;bottom:16px;z-index:5;display:flex;gap:8px;opacity:0;transition:opacity .3s}
+body.active #bar{opacity:1}
+body.playing:not(.active) #bar button{cursor:none}
 #cover{position:fixed;inset:0;z-index:2;display:none}
 body.playing #cover{display:block;cursor:none}
 body.playing.active #cover{cursor:default}
