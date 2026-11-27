@@ -19,9 +19,11 @@ button{font-size:22px;padding:16px;border:0;border-radius:12px;background:#e5393
 .hint{color:#aaa;font-size:15px;margin:0}
 #err{color:#ff8a80;min-height:1.5em;margin:0}
 /* 우리 버튼은 왼쪽 위에 한 줄로 (유튜브 자체 조작바·⚙설정은 아래쪽에 있으니 안 겹치게) */
-#bar{position:fixed;left:14px;top:14px;z-index:30;display:none;gap:10px}
+/* 평소엔 완전히 숨김 → 화면을 만지면 5초 동안만 나타남 */
+#bar{position:fixed;left:14px;top:14px;z-index:30;display:none;gap:10px;opacity:0;pointer-events:none;transition:opacity .3s}
 body.playing #bar{display:flex}
-#bar button{font-size:20px;padding:14px 20px;min-height:58px;background:rgba(0,0,0,.7);border:2px solid rgba(255,255,255,.4);opacity:.55;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
+body.playing.active #bar{opacity:1;pointer-events:auto}
+#bar button{font-size:20px;padding:14px 20px;min-height:58px;background:rgba(0,0,0,.7);border:2px solid rgba(255,255,255,.4);touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
 #bar button:hover,#bar button:active{opacity:1;background:#e53935}
 #status{position:fixed;left:14px;top:84px;z-index:5;font-size:14px;color:#ccc;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none}
 body.active #status{opacity:1}
@@ -53,7 +55,7 @@ body.active #status{opacity:1}
 <script>
 {
 const $ = id => document.getElementById(id);
-const VER = '5'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
+const VER = '6'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
 const store = {
   get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
   set(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
@@ -140,6 +142,7 @@ function start(){
         if ($('shuffle').checked) setTimeout(() => { try{ player.setShuffle(true); player.playVideoAt(0); }catch(e){} }, 1500);
       },
       onStateChange: e => {
+        if (e.data === YT.PlayerState.PAUSED) showControls(); // 일시정지 누르면 버튼도 보이게
         if (e.data === YT.PlayerState.PLAYING){
           lastGood = Date.now();
           try{
@@ -191,14 +194,20 @@ if (store.get('mv_autostart_once') === '1'){
   window.onYouTubeIframeAPIReady = () => { apiReady = true; if (listId) start(); };
 }
 
-// 화면 만지면 3초 동안 재생 상태 글씨 표시
-let hideTimer = null, overBar = false;
+// 화면을 만지면 5초 동안만 우리 버튼 표시, 그 뒤엔 완전히 사라짐
+let hideTimer = null;
 function showControls(){
   document.body.classList.add('active');
   clearTimeout(hideTimer);
-  hideTimer = setTimeout(() => { if (!overBar) document.body.classList.remove('active'); }, 3000);
+  hideTimer = setTimeout(() => {
+    document.body.classList.remove('active');
+    // 영상 쪽으로 넘어간 포커스를 되찾아 둬야, 다음에 영상을 만질 때도 버튼이 다시 나타남
+    try{ if (document.activeElement && document.activeElement.tagName === 'IFRAME') document.activeElement.blur(); window.focus(); }catch(e){}
+  }, 5000);
 }
-['mousemove','mousedown','touchstart','keydown'].forEach(ev => document.addEventListener(ev, showControls, {passive:true}));
+['mousemove','mousedown','touchstart','pointerdown','keydown'].forEach(ev => document.addEventListener(ev, showControls, {passive:true}));
+// 영상(유튜브 화면)을 만지면 이 페이지는 포커스를 잃음 → 그걸 신호로 버튼 표시
+window.addEventListener('blur', () => { if (document.body.classList.contains('playing')) showControls(); });
 
 // 새 버전이 올라오면 새로고침 없이 알아서 새 화면으로 (5분마다 확인, 캐시 무시)
 async function checkUpdate(){
