@@ -20,12 +20,12 @@ button{font-size:22px;padding:16px;border:0;border-radius:12px;background:#e5393
 #err{color:#ff8a80;min-height:1.5em;margin:0}
 /* 우리 버튼은 왼쪽 위에 한 줄로 (유튜브 자체 조작바·⚙설정은 아래쪽에 있으니 안 겹치게) */
 /* 평소엔 완전히 숨김 → 화면을 만지면 5초 동안만 나타남 */
-#bar{position:fixed;left:14px;top:14px;z-index:30;display:none;gap:10px;opacity:0;pointer-events:none;transition:opacity .3s}
+#bar{position:fixed;left:14px;top:66vh;z-index:30;display:none;gap:10px;opacity:0;pointer-events:none;transition:opacity .3s}
 body.playing #bar{display:flex}
 body.playing.active #bar{opacity:1;pointer-events:auto}
 #bar button{font-size:20px;padding:14px 20px;min-height:58px;background:rgba(0,0,0,.7);border:2px solid rgba(255,255,255,.4);touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none}
 #bar button:hover,#bar button:active{opacity:1;background:#e53935}
-#status{position:fixed;left:14px;top:84px;z-index:5;font-size:14px;color:#ccc;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none}
+#status{position:fixed;left:14px;top:calc(66vh + 70px);z-index:5;font-size:14px;color:#ccc;background:rgba(0,0,0,.6);padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none}
 body.active #status{opacity:1}
 </style>
 </head>
@@ -55,7 +55,7 @@ body.active #status{opacity:1}
 <script>
 {
 const $ = id => document.getElementById(id);
-const VER = '6'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
+const VER = '7'; // 고칠 때마다 1씩 올리기 (열려 있는 화면이 새 버전을 알아서 불러옴)
 const store = {
   get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
   set(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
